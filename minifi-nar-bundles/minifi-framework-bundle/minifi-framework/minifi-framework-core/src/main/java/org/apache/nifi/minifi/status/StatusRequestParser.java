@@ -350,6 +350,8 @@ public final class StatusRequestParser {
     static InstanceStatus parseInstanceRequest(String statusTypes, FlowController flowController, ProcessGroupStatus rootGroupStatus) {
         InstanceStatus instanceStatus = new InstanceStatus();
 
+        instanceStatus.setId(rootGroupStatus.getId());
+        instanceStatus.setName(rootGroupStatus.getName());
         flowController.getAllControllerServices();
         List<Bulletin> bulletinList = flowController.getBulletinRepository().findBulletinsForController();
         String[] statusSplits = statusTypes.split(",");
