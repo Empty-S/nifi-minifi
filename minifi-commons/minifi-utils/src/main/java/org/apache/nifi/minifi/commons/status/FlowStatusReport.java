@@ -144,9 +144,14 @@ public class FlowStatusReport implements java.io.Serializable {
     @Override
     public String toString() {
 
+        final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        final DateFormat df = new SimpleDateFormat(TIMESTAMP_FORMAT);
+        df.setTimeZone(TimeZone.getTimeZone("Z"));
+
         StringWriter jsonString = new StringWriter();
         try(JsonGenerator generator = objectMapper.getFactory().createGenerator(jsonString)){
             generator.writeStartObject();
+            generator.writeObjectField("timestamp", df.format(new Date()));
             generator.writeObjectField("controllerServiceStatusList", controllerServiceStatusList);
             generator.writeObjectField("processorStatusList", processorStatusList);
             generator.writeObjectField("connectionStatusList", connectionStatusList);
@@ -161,7 +166,8 @@ public class FlowStatusReport implements java.io.Serializable {
             //this should not occur since we are using a StringWriter, however, in the event it does. Generate
             //the old style report
             return "FlowStatusReport{" +
-                "controllerServiceStatusList=" + controllerServiceStatusList +
+                "timestamp" + df.format(new Date()) +
+                ", controllerServiceStatusList=" + controllerServiceStatusList +
                 ", processorStatusList=" + processorStatusList +
                 ", connectionStatusList=" + connectionStatusList +
                 ", remoteProcessGroupStatusList=" + remoteProcessGroupStatusList +
