@@ -131,11 +131,11 @@ public class InstanceStats implements java.io.Serializable {
                 "bytesRead=" + bytesRead +
                 ", bytesWritten=" + bytesWritten +
                 ", bytesSent=" + bytesSent +
-                ", flowfilesSent=" + flowfilesSent +
+                ", flowFilesSent=" + flowfilesSent +
                 ", bytesTransferred=" + bytesTransferred +
-                ", flowfilesTransferred=" + flowfilesTransferred +
+                ", flowFilesTransferred=" + flowfilesTransferred +
                 ", bytesReceived=" + bytesReceived +
-                ", flowfilesReceived=" + flowfilesReceived +
+                ", flowFilesReceived=" + flowfilesReceived +
                 '}';
     }
 }
