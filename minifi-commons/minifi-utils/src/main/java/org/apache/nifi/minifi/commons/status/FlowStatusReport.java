@@ -29,7 +29,11 @@ import org.apache.nifi.minifi.commons.status.system.SystemDiagnosticsStatus;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class FlowStatusReport implements java.io.Serializable {
     private List<ControllerServiceStatus> controllerServiceStatusList;
