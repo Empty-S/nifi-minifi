@@ -20,10 +20,10 @@ package org.apache.nifi.minifi.commons.status.processor;
 public class ProcessorStats implements java.io.Serializable {
 
     private int activeThreads;
-    private int flowfilesReceived;
+    private int flowFilesReceived;
     private long bytesRead;
     private long bytesWritten;
-    private int flowfilesSent;
+    private int flowFilesSent;
     private int invocations;
     private long processingNanos;
 
@@ -39,11 +39,11 @@ public class ProcessorStats implements java.io.Serializable {
     }
 
     public int getFlowfilesReceived() {
-        return flowfilesReceived;
+        return flowFilesReceived;
     }
 
-    public void setFlowfilesReceived(int flowfilesReceived) {
-        this.flowfilesReceived = flowfilesReceived;
+    public void setFlowfilesReceived(int flowFilesReceived) {
+        this.flowFilesReceived = flowFilesReceived;
     }
 
     public long getBytesRead() {
@@ -63,11 +63,11 @@ public class ProcessorStats implements java.io.Serializable {
     }
 
     public int getFlowfilesSent() {
-        return flowfilesSent;
+        return flowFilesSent;
     }
 
-    public void setFlowfilesSent(int flowfilesSent) {
-        this.flowfilesSent = flowfilesSent;
+    public void setFlowfilesSent(int flowFilesSent) {
+        this.flowFilesSent = flowFilesSent;
     }
 
     public int getInvocations() {
@@ -119,10 +119,10 @@ public class ProcessorStats implements java.io.Serializable {
     public String toString() {
         return "{" +
                 "activeThreads=" + activeThreads +
-                ", flowfilesReceived=" + flowfilesReceived +
+                ", flowFilesReceived=" + flowFilesReceived +
                 ", bytesRead=" + bytesRead +
                 ", bytesWritten=" + bytesWritten +
-                ", flowfilesSent=" + flowfilesSent +
+                ", flowFilesSent=" + flowFilesSent +
                 ", invocations=" + invocations +
                 ", processingNanos=" + processingNanos +
                 '}';

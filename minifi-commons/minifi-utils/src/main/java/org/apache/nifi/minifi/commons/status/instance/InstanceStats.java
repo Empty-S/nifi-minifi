@@ -21,11 +21,11 @@ public class InstanceStats implements java.io.Serializable {
     private long bytesRead;
     private long bytesWritten;
     private long bytesSent;
-    private int flowfilesSent;
+    private int flowFilesSent;
     private long bytesTransferred;
-    private int flowfilesTransferred;
+    private int flowFilesTransferred;
     private long bytesReceived;
-    private int flowfilesReceived;
+    private int flowFilesReceived;
 
     public InstanceStats() {
     }
@@ -55,11 +55,11 @@ public class InstanceStats implements java.io.Serializable {
     }
 
     public int getFlowfilesSent() {
-        return flowfilesSent;
+        return flowFilesSent;
     }
 
-    public void setFlowfilesSent(int flowfilesSent) {
-        this.flowfilesSent = flowfilesSent;
+    public void setFlowfilesSent(int flowFilesSent) {
+        this.flowFilesSent = flowFilesSent;
     }
 
     public long getBytesTransferred() {
@@ -71,11 +71,11 @@ public class InstanceStats implements java.io.Serializable {
     }
 
     public int getFlowfilesTransferred() {
-        return flowfilesTransferred;
+        return flowFilesTransferred;
     }
 
-    public void setFlowfilesTransferred(int flowfilesTransferred) {
-        this.flowfilesTransferred = flowfilesTransferred;
+    public void setFlowfilesTransferred(int flowFilesTransferred) {
+        this.flowFilesTransferred = flowFilesTransferred;
     }
 
     public long getBytesReceived() {
@@ -87,11 +87,11 @@ public class InstanceStats implements java.io.Serializable {
     }
 
     public int getFlowfilesReceived() {
-        return flowfilesReceived;
+        return flowFilesReceived;
     }
 
-    public void setFlowfilesReceived(int flowfilesReceived) {
-        this.flowfilesReceived = flowfilesReceived;
+    public void setFlowfilesReceived(int flowFilesReceived) {
+        this.flowFilesReceived = flowFilesReceived;
     }
 
     @Override
@@ -131,11 +131,11 @@ public class InstanceStats implements java.io.Serializable {
                 "bytesRead=" + bytesRead +
                 ", bytesWritten=" + bytesWritten +
                 ", bytesSent=" + bytesSent +
-                ", flowFilesSent=" + flowfilesSent +
+                ", flowFilesSent=" + flowFilesSent +
                 ", bytesTransferred=" + bytesTransferred +
-                ", flowFilesTransferred=" + flowfilesTransferred +
+                ", flowFilesTransferred=" + flowFilesTransferred +
                 ", bytesReceived=" + bytesReceived +
-                ", flowFilesReceived=" + flowfilesReceived +
+                ", flowFilesReceived=" + flowFilesReceived +
                 '}';
     }
 }
