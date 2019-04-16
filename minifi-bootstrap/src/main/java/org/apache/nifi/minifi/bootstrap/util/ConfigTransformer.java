@@ -717,101 +717,101 @@ public final class ConfigTransformer {
             "\n";
 
     /*
-	 * 通过路由表找到连接默认网关的ip接口，通过这些ip接口（InetAddress），对应上他们所在的网络接口（NetworkInterface），然后获取网络接口的mac地址
-	 * @return Set<String>：（a0-xx-xx-xx-xx-cb，0c-xx-xx-xx-xx-39)
-	 */
-	public static String getLocalMacAddress() {
-		String os = System.getProperty("os.name");
-		if (os == null)
-			return null;
-		try {
-			if(os.startsWith("Windows")) {
-				String ipAddr = getIpInUse();
-				InetAddress ia = InetAddress.getByName(ipAddr);
-				NetworkInterface ni = NetworkInterface.getByInetAddress(ia);
-				byte[] mac = ni.getHardwareAddress();
-				//byte->int->16进制->string
-				StringBuffer buffer = new StringBuffer();
-				for (int i = 0; i < mac.length; i++) {
-					if (i != 0)
-						buffer.append("-");
-					String tmp = Integer.toHexString(mac[i] & 0xFF);// 将byte转为正整数。然后转为16进制数
+     * 通过路由表找到连接默认网关的ip接口，通过这些ip接口（InetAddress），对应上他们所在的网络接口（NetworkInterface），然后获取网络接口的mac地址
+     * @return Set<String>：（a0-xx-xx-xx-xx-cb，0c-xx-xx-xx-xx-39)
+     */
+    public static String getLocalMacAddress() {
+        String os = System.getProperty("os.name");
+        if (os == null)
+            return null;
+        try {
+            if(os.startsWith("Windows")) {
+                String ipAddr = getIpInUse();
+                InetAddress ia = InetAddress.getByName(ipAddr);
+                NetworkInterface ni = NetworkInterface.getByInetAddress(ia);
+                byte[] mac = ni.getHardwareAddress();
+                //byte->int->16进制->string
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < mac.length; i++) {
+                    if (i != 0)
+                        buffer.append("-");
+                    String tmp = Integer.toHexString(mac[i] & 0xFF);// 将byte转为正整数。然后转为16进制数
+                    buffer.append(tmp.length() == 1 ? 0 + tmp : tmp);
+                }
+                /*System.out.println("网络接口名称ni：" + ni.getName()+"---" + "mac地址：" + buffer.toString().toLowerCase()
+                    + "---" + "ip地址：" + ipAddr);*/
+                return buffer.toString().toLowerCase();
+            }
+            else if(os.startsWith("Linux")) {
+                String iface = getIfaceInUse();
+                NetworkInterface ni = NetworkInterface.getByName(iface);
+                byte[] mac = ni.getHardwareAddress();
+                //byte->int->16进制->string
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < mac.length; i++) {
+                    if (i != 0)
+                        buffer.append("-");
+                    String tmp = Integer.toHexString(mac[i] & 0xFF);// 将byte转为正整数。然后转为16进制数
 					buffer.append(tmp.length() == 1 ? 0 + tmp : tmp);
-				}
-				/*System.out.println("网络接口名称ni：" + ni.getName()+"---" + "mac地址：" + buffer.toString().toLowerCase()
-						+ "---" + "ip地址：" + ipAddr);*/
-				return buffer.toString().toLowerCase();
-			}
-			else if(os.startsWith("Linux")) {
-				String iface = getIfaceInUse();
-				NetworkInterface ni = NetworkInterface.getByName(iface);
-				byte[] mac = ni.getHardwareAddress();
-				//byte->int->16进制->string
-				StringBuffer sb = new StringBuffer();
-				for (int i = 0; i < mac.length; i++) {
-					if (i != 0)
-						sb.append("-");
-					String tmp = Integer.toHexString(mac[i] & 0xFF);// 将byte转为正整数。然后转为16进制数
-					sb.append(tmp.length() == 1 ? 0 + tmp : tmp);
-				}
-				//System.out.println("测试macAddress："+sb.toString().toLowerCase());
-				return sb.toString().toLowerCase();
-			}
-		} catch (UnknownHostException | SocketException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+                }
+                //System.out.println("测试macAddress："+buffer.toString().toLowerCase());
+                return buffer.toString().toLowerCase();
+            }
+        } catch (UnknownHostException | SocketException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 	
-	/*
-	 * 通过路由表的目的网络是'0.0.0.0'获得网关，从而获得可访问外部网络的IP地址
-	 * 用于Windows系统
-	 * @return String
-	 */
-	public static String getIpInUse(){
-		String command = "route print -4";
-		String ipAddr = null;
-		try{
-			Process process = Runtime.getRuntime().exec(command);
-			BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line;
-			while ((line = br.readLine()) != null) {
-				String[] tmp = line.trim().split("\\s+");
-				if (tmp.length > 0 && tmp[0].equals("0.0.0.0")) {
-					ipAddr = tmp[3];
-					break;
-				}
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return ipAddr;
-	}
+    /*
+     * 通过路由表的目的网络是'0.0.0.0'获得网关，从而获得可访问外部网络的IP地址
+     * 用于Windows系统
+     * @return String
+     */
+    public static String getIpInUse(){
+        String command = "route print -4";
+        String ipAddr = null;
+        try{
+            Process process = Runtime.getRuntime().exec(command);
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] tmp = line.trim().split("\\s+");
+                if (tmp.length > 0 && tmp[0].equals("0.0.0.0")) {
+                    ipAddr = tmp[3];
+                    break;
+                }
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ipAddr;
+    }
 	
-	/*
-	 * 通过路由表的目的网络是'0.0.0.0'或'default'获得网关，从而获得可访问外部网络的网卡接口
-	 * 用于Linux系统
-	 * @return String
-	 */
-	public static String getIfaceInUse(){
-		String command = "route";
-		String iface = null;
-		try{
-			Process process = Runtime.getRuntime().exec(command);
-			BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line;
-			while ((line = br.readLine()) != null) {
-				String[] tmp = line.trim().split("\\s+");
-				if (tmp.length > 0 && (tmp[0].equals("0.0.0.0") || tmp[0].toLowerCase().equals("default"))) {
-					iface = tmp[7];
-					break;
-				}
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return iface;
-	}
+    /*
+     * 通过路由表的目的网络是'0.0.0.0'或'default'获得网关，从而获得可访问外部网络的网卡接口
+     * 用于Linux系统
+     * @return String
+     */
+    public static String getIfaceInUse(){
+        String command = "route";
+        String iface = null;
+        try{
+            Process process = Runtime.getRuntime().exec(command);
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] tmp = line.trim().split("\\s+");
+                if (tmp.length > 0 && (tmp[0].equals("0.0.0.0") || tmp[0].toLowerCase().equals("default"))) {
+                    iface = tmp[7];
+                    break;
+                }
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return iface;
+    }
 }
