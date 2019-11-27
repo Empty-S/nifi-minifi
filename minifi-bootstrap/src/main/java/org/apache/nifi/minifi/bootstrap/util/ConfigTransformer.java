@@ -79,12 +79,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 public final class ConfigTransformer {
     // Underlying version of NIFI will be using
-    public static final String NIFI_VERSION = "1.4.0";
+    public static final String NIFI_VERSION = "1.8.0";
     public static final String ROOT_GROUP = "Root-Group";
     public static final String DEFAULT_PROV_REPORTING_TASK_CLASS = "org.apache.nifi.reporting.SiteToSiteProvenanceReportingTask";
     public static final String NIFI_VERSION_KEY = "nifi.version";
@@ -93,16 +94,20 @@ public final class ConfigTransformer {
     private ConfigTransformer() {
     }
 
-    public static void transformConfigFile(String sourceFile, String destPath) throws Exception {
-        File ymlConfigFile = new File(sourceFile);
-        InputStream ios = new FileInputStream(ymlConfigFile);
-
-        transformConfigFile(ios, destPath);
-    }
-
-    public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
+    public static void transformConfigFile(InputStream sourceStream, String destPath, Properties bootstrapProperties) throws Exception {
         ConvertableSchema<ConfigSchema> convertableSchema = throwIfInvalid(SchemaLoader.loadConvertableSchemaFromYaml(sourceStream));
         ConfigSchema configSchema = throwIfInvalid(convertableSchema.convert());
+
+        SecurityPropertiesSchema securityProperties = BootstrapTransformer.buildSecurityPropertiesFromBootstrap(bootstrapProperties).orElse(null);
+        ProvenanceReportingSchema provenanceReportingProperties = BootstrapTransformer.buildProvenanceReportingPropertiesFromBootstrap(bootstrapProperties).orElse(null);
+
+        // See if we are providing defined properties from the filesystem configurations and use those as the definitive values
+        if (securityProperties != null) {
+            configSchema.setSecurityProperties(securityProperties);
+        }
+        if (provenanceReportingProperties != null) {
+            configSchema.setProvenanceReportingProperties(provenanceReportingProperties);
+        }
 
         // Create nifi.properties and flow.xml.gz in memory
         ByteArrayOutputStream nifiPropertiesOutputStream = new ByteArrayOutputStream();
@@ -344,7 +349,7 @@ public final class ConfigTransformer {
             Map<String, Object> attributes = new HashMap<>();
             attributes.put("Keystore Filename", securityProperties.getKeystore());
             attributes.put("Keystore Type", securityProperties.getKeystoreType());
-            attributes.put("Keystore Password", securityProperties.getKeyPassword());
+            attributes.put("Keystore Password", securityProperties.getKeystorePassword());
             attributes.put("Truststore Filename", securityProperties.getTruststore());
             attributes.put("Truststore Type", securityProperties.getTruststoreType());
             attributes.put("Truststore Password", securityProperties.getTruststorePassword());

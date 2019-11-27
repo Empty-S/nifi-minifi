@@ -79,6 +79,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.nifi.minifi.commons.schema.common.BootstrapPropertyKeys.STATUS_REPORTER_COMPONENTS_KEY;
 
 /**
  * <p>
@@ -127,14 +128,10 @@ public class RunMiNiFi implements QueryableStatusAggregator, ConfigurationFileHo
     public static final String DUMP_CMD = "DUMP";
     public static final String FLOW_STATUS_REPORT_CMD = "FLOW_STATUS_REPORT";
 
-    public static final String NOTIFIER_PROPERTY_PREFIX = "nifi.minifi.notifier";
-    public static final String NOTIFIER_COMPONENTS_KEY = NOTIFIER_PROPERTY_PREFIX + ".components";
-
-    public static final String STATUS_REPORTER_PROPERTY_PREFIX = "nifi.minifi.status.reporter";
-    public static final String STATUS_REPORTER_COMPONENTS_KEY = STATUS_REPORTER_PROPERTY_PREFIX + ".components";
+    private static final int UNINITIALIZED_CC_PORT = -1;
 
     private volatile boolean autoRestartNiFi = true;
-    private volatile int ccPort = -1;
+    private volatile int ccPort = UNINITIALIZED_CC_PORT;
     private volatile long minifiPid = -1L;
     private volatile String secretKey;
     private volatile ShutdownHook shutdownHook;
@@ -1292,6 +1289,7 @@ public class RunMiNiFi implements QueryableStatusAggregator, ConfigurationFileHo
                             setNiFiStarted(false);
                         }
 
+                        secretKey = null;
                         process = builder.start();
                         handleLogging(process);
 
@@ -1468,6 +1466,12 @@ public class RunMiNiFi implements QueryableStatusAggregator, ConfigurationFileHo
     }
 
     void setMiNiFiCommandControlPort(final int port, final String secretKey) throws IOException {
+
+        if (this.secretKey != null && this.ccPort != UNINITIALIZED_CC_PORT) {
+            defaultLogger.warn("Blocking attempt to change MiNiFi command port and secret after they have already been initialized. requestedPort={}", port);
+            return;
+        }
+
         this.ccPort = port;
         this.secretKey = secretKey;
 
@@ -1630,7 +1634,7 @@ public class RunMiNiFi implements QueryableStatusAggregator, ConfigurationFileHo
                             newConfigBais.reset();
 
                             logger.info("Performing transformation for input and saving outputs to {}", confDir);
-                            ByteBuffer tempConfigFile = performTransformation(newConfigBais, confDir);
+                            ByteBuffer tempConfigFile = runner.performTransformation(newConfigBais, confDir);
                             runner.currentConfigFileReference.set(tempConfigFile.asReadOnlyBuffer());
 
                             try {
@@ -1638,7 +1642,7 @@ public class RunMiNiFi implements QueryableStatusAggregator, ConfigurationFileHo
                                 restartInstance();
                             } catch (Exception e) {
                                 logger.debug("Transformation of new config file failed after transformation into Flow.xml and nifi.properties, reverting.");
-                                ByteBuffer resetConfigFile = performTransformation(new FileInputStream(swapConfigFile), confDir);
+                                ByteBuffer resetConfigFile = runner.performTransformation(new FileInputStream(swapConfigFile), confDir);
                                 runner.currentConfigFileReference.set(resetConfigFile.asReadOnlyBuffer());
                                 throw e;
                             }
@@ -1701,11 +1705,15 @@ public class RunMiNiFi implements QueryableStatusAggregator, ConfigurationFileHo
         }
     }
 
-    private static ByteBuffer performTransformation(InputStream configIs, String configDestinationPath) throws ConfigurationChangeException, IOException {
+    private ByteBuffer performTransformation(InputStream configIs, String configDestinationPath) throws ConfigurationChangeException, IOException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                TeeInputStream teeInputStream = new TeeInputStream(configIs, byteArrayOutputStream)) {
+             TeeInputStream teeInputStream = new TeeInputStream(configIs, byteArrayOutputStream)) {
 
-            ConfigTransformer.transformConfigFile(teeInputStream, configDestinationPath);
+            ConfigTransformer.transformConfigFile(
+                teeInputStream,
+                configDestinationPath,
+                getBootstrapProperties()
+            );
 
             return ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
         } catch (ConfigurationChangeException e){

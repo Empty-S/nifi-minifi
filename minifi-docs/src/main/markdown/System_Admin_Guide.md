@@ -342,7 +342,7 @@ Bootstrap Config File: /Users/user/projects/nifi-minifi/minifi-assembly/target/m
 
 # Config File
 
-The *config.yml* in the `conf` directory is the main configuration file for controlling how MiNiFi runs. This section provides an overview of the properties in this file. The file is a YAML file and follows the YAML format laid out [here](http://www.yaml.org/).
+The *config.yml* in the `conf` directory is the main configuration file for controlling how MiNiFi runs. This section provides an overview of the properties in this file. The file is a YAML file and follows the YAML format laid out [here](https://www.yaml.org/).
 
 Alternatively, the MiNiFi Toolkit Converter can aid in creating a *config.yml* from a generated template exported from a NiFi instance.  This tool can be downloaded from https://nifi.apache.org/minifi/download.html under the "MiNiFi Toolkit Binaries" section.  Information on the toolkit's usage is available at https://nifi.apache.org/minifi/minifi-toolkit.html.
 
@@ -618,21 +618,26 @@ When connecting via Site to Site, MiNiFi needs to know which input or output por
 
 ## Provenance Reporting
 
-MiNiFi is currently designed only to report provenance data using the Site to Site protocol. These properties configure the underlying reporting task that sends the provenance events.
-
-*Property*             | *Description*
----------------------- | -------------
-`comment`              | A comment about the Provenance reporting. This is not used for any underlying implementation but solely for the users of this configuration and MiNiFi agent.
-`scheduling strategy`  | The strategy for executing the Reporting Task. Valid options are `CRON_DRIVEN` or `TIMER_DRIVEN`
-`scheduling period`    | This property expects different input depending on the scheduling strategy selected. For the `TIMER_DRIVEN` scheduling strategy, this value is a time duration specified by a number followed by a time unit. For example, 1 second or 5 mins. The default value of `0 sec` means that the Processor should run as often as possible as long as it has data to process. This is true for any time duration of 0, regardless of the time unit (i.e., 0 sec, 0 mins, 0 days). For an explanation of values that are applicable for the CRON driven scheduling strategy, see the description of the CRON driven scheduling strategy in the scheduling tab section of the [NiFi User documentation](https://nifi.apache.org/docs/nifi-docs/html/user-guide.html#scheduling-tab).
-`destination url`      | The URL to post the Provenance Events to.
-`port name`            | The name of the input port as it exists on the receiving NiFi instance. To get this information access the UI of the core instance, right the input port that is desired to be connect to and select "configure". The id of the port should under the "Port name" section.
-`originating url`      | The URL of this MiNiFi instance. This is used to include the Content URI to send to the destination.
-`use compression`      | Indicates whether or not to compress the events when being sent.
-`timeout`              | How long MiNiFi should wait before timing out the connection.
-`batch size`           | Specifies how many records to send in a single batch, at most. This should be significantly above the expected amount of records generated between scheduling. If it is not, then there is the potential for the Provenance reporting to lag behind event generation and never catch up.
+MiNiFi is currently designed only to report provenance data using the Site to Site protocol.
 
 **Note:** In order to send via HTTPS, the "Security Properties" must be fully configured. A StandardSSLContextService will be made automatically with the ID "SSL-Context-Service" and used by the Provenance Reporting.
+
+Provenance Reporting can be configured in two ways via:
+
+* **config.yml**:  These properties are specified below and an example can be found in the Example Config File section.
+* **bootstrap.conf**:   This is an alternative means of configuration that takes precedence over the config.yml configuration and is a way of separating provenance reporting settings from the processing flow.
+
+*bootstrap.conf Property*                                 | *config.yml Property* | *Description*
+--------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------
+`nifi.minifi.provenance.reporting.comment`                | `comment`             | A comment about the Provenance reporting. This is not used for any underlying implementation but solely for the users of this configuration and MiNiFi agent.
+`nifi.minifi.provenance.reporting.scheduling.strategy`    | `scheduling strategy` | The strategy for executing the Reporting Task. Valid options are CRON_DRIVEN or TIMER_DRIVEN
+`nifi.minifi.provenance.reporting.scheduling.period`      | `scheduling period`   | This property expects different input depending on the scheduling strategy selected. For the TIMER_DRIVEN scheduling strategy, this value is a time duration specified by a number followed by a time unit. For example, 1 second or 5 mins. The default value of 0 sec means that the Processor should run as often as possible as long as it has data to process. This is true for any time duration of 0, regardless of the time unit (i.e., 0 sec, 0 mins, 0 days). For an explanation of values that are applicable for the CRON driven scheduling strategy, see the description of the CRON driven scheduling strategy in the scheduling tab section of the NiFi User documentation.
+`nifi.minifi.provenance.reporting.destination.url`        | `destination url`     | The URL to post the Provenance Events to.
+`nifi.minifi.provenance.reporting.input.port.name`        | `port name`           | The name of the input port as it exists on the receiving NiFi instance. To get this information access the UI of the core instance, right the input port that is desired to be connect to and select "configure". The id of the port should under the "Port name" section.
+`nifi.minifi.provenance.reporting.instance.url`           | `originating url`     | The URL of this MiNiFi instance. This is used to include the Content URI to send to the destination.
+`nifi.minifi.provenance.reporting.compress.events`        | `use compression`     | Indicates whether or not to compress the events when being sent.
+`nifi.minifi.provenance.reporting.batch.size`             | `batch size`          | Specifies how many records to send in a single batch, at most. This should be significantly above the expected amount of records generated between scheduling. If it is not, then there is the potential for the Provenance reporting to lag behind event generation and never catch up.
+`nifi.minifi.provenance.reporting.communications.timeout` | `timeout`             | How long MiNiFi should wait before timing out the connection.
 
 ## NiFi Properties Overrides
 
@@ -646,6 +651,36 @@ NiFi Properties Overrides:
   nifi.content.repository.directory.default: ./content_repository_override
   nifi.database.directory: ./database_repository_override
 ```
+
+# Security Configuration
+Currently, it is possible to specify keystore and truststore information to allow mutual TLS communication across the Site to Site protocol as well as provisioning an SSL Context for components in the config.yml
+
+Security can be configured in two ways for instances via:
+
+* **config.yml**:  These properties are specified as outlined in the 'Security Properties' and 'Sensitive Properties' in the config.yml sections above.  These allow the specification of security properties to be versioned with the flow and consumed via Change Ingestors.
+* **bootstrap.conf**:   This is an alternative means of configuration that takes precedence over the config.yml configuration and is a way of separating security concerns from the processing flow.  The following properties should be defined:
+
+## Security Properties in bootstrap.conf
+
+*bootstrap.conf Property*               | *config.yml Property* | *Description*
+--------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------
+`nifi.minifi.security.keystore`         | `keystore`            | The full path and name of the keystore. It is blank by default.
+`nifi.minifi.security.keystoreType`     | `keystore type`       | The keystore type. It is blank by default.
+`nifi.minifi.security.keystorePasswd`   | `keystore password`   | The keystore password. It is blank by default.
+`nifi.minifi.security.keyPasswd`        | `key password`        | The key password. It is blank by default.
+`nifi.minifi.security.truststore`       | `truststore`          | The full path and name of the truststore. It is blank by default.
+`nifi.minifi.security.truststoreType`   | `truststore type`     | The truststore type. It is blank by default.
+`nifi.minifi.security.truststorePasswd` | `truststore password` | The truststore password. It is blank by default.
+`nifi.minifi.security.ssl.protocol`     | `ssl protocol`        | The protocol to use when communicating via https. Necessary to transfer provenance securely.
+
+## Sensitive Property Configuration in bootstrap.conf
+
+*bootstrap.conf Property*               | *config.yml Property* | *Description*
+--------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------
+`nifi.minifi.sensitive.props.key`       | `key`                 | This is the password used to encrypt any sensitive property values that are configured in processors. By default, it is blank, but the system administrator should provide a value for it. It can be a string of any length, although the recommended minimum length is 10 characters. Be aware that once this password is set and one or more sensitive processor properties have been configured, this password should not be changed.
+`nifi.minifi.sensitive.props.algorithm` | `algorithm`           | The algorithm used to encrypt sensitive properties. The default value is `PBEWITHMD5AND256BITAES-CBC-OPENSSL`.
+`nifi.minifi.sensitive.props.provider`  | `provider`            | The sensitive property provider. The default value is `BC`.
+
 
 # Running as a Windows Service
 
@@ -916,3 +951,15 @@ Provenance Reporting:
     timeout: 30 secs
     batch size: 1000
 ```
+
+# Recommended Antivirus Exclusions
+
+Antivirus software can take a long time to scan directories and the files within them. Additionally, if the antivirus software locks files or directories during a scan, those resources are unavailable to MiNiFi processes, causing latency or unavailability of these resources in a MiNiFi instance. To prevent these performance and reliability issues from occurring, it is highly recommended to configure your antivirus software to skip scans on the following MiNiFi directories:
+
+### MiNiFi Java:
+
+  - content_repository
+  - flowfile_repository
+  - logs
+  - provenance_repository
+  - state

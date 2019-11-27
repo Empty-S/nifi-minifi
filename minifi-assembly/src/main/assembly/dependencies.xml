@@ -136,14 +136,11 @@
     </dependencySets>
     <files>
         <file>
-            <source>./target/minifi.exe</source>
-            <outputDirectory>./bin</outputDirectory>
-            <filtered>false</filtered>
-        </file>
-        <file>
-            <source>./target/minifiw.exe</source>
-            <outputDirectory>./bin</outputDirectory>
-            <filtered>false</filtered>
+            <source>src/main/resources/build.properties.template</source>
+            <outputDirectory>./</outputDirectory>
+            <destName>build.properties</destName>
+            <fileMode>0444</fileMode>
+            <filtered>true</filtered>
         </file>
 
         <file>
