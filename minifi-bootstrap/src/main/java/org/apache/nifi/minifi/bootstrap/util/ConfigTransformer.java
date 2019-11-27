@@ -740,7 +740,22 @@ public final class ConfigTransformer {
                 }
                 /*System.out.println("网络接口名称ni：" + ni.getName()+"---" + "mac地址：" + buffer.toString().toLowerCase()
                     + "---" + "ip地址：" + ipAddr);*/
-                return buffer.toString().toLowerCase();
+                //return buffer.toString().toLowerCase();
+
+                //将MAC地址格式的字符串转换为UUID格式的字符串，位数不够则补0
+                String macAddress = buffer.toString().toLowerCase();
+                StringBuffer sb = new StringBuffer();
+                String[] nums = macAddress.split("-");
+                int i=0;
+                for (; i<4; i++) {
+                    sb.append(nums[i]);
+                }
+                sb.append("-");
+                for (; i<nums.length; i++) {
+                    sb.append(nums[i]);
+                }
+                sb.append("-0000-0000-000000000000");
+                return sb.toString();
             }
             else if(os.startsWith("Linux")) {
                 String iface = getIfaceInUse();
@@ -755,7 +770,22 @@ public final class ConfigTransformer {
 					buffer.append(tmp.length() == 1 ? 0 + tmp : tmp);
                 }
                 //System.out.println("测试macAddress："+buffer.toString().toLowerCase());
-                return buffer.toString().toLowerCase();
+                //return buffer.toString().toLowerCase();
+
+                //将MAC地址格式的字符串转换为UUID格式的字符串，位数不够则补0
+                String macAddress = buffer.toString().toLowerCase();
+                StringBuffer sb = new StringBuffer();
+                String[] nums = macAddress.split("-");
+                int i=0;
+                for (; i<4; i++) {
+                    sb.append(nums[i]);
+                }
+                sb.append("-");
+                for (; i<nums.length; i++) {
+                    sb.append(nums[i]);
+                }
+                sb.append("-0000-0000-000000000000");
+                return sb.toString();
             }
         } catch (UnknownHostException | SocketException e) {
             e.printStackTrace();
