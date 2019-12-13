@@ -41,7 +41,7 @@ public class CorePropertiesSchema extends BaseSchema implements WritableSchema {
     public static final String DEFAULT_ADMINISTRATIVE_YIELD_DURATION = "30 sec";
     public static final String DEFAULT_BORED_YIELD_DURATION = "10 millis";
     public static final int DEFAULT_MAX_CONCURRENT_THREADS = 1;
-    public static final String DEFAULT_VARIABLE_REGISTRY_PROPERTIES = "";
+    public static final String DEFAULT_VARIABLE_REGISTRY_PROPERTIES = "./conf/custom.properties";
 
     private String flowControllerGracefulShutdownPeriod = DEFAULT_FLOW_CONTROLLER_GRACEFUL_SHUTDOWN_PERIOD;
     private String flowServiceWriteDelayInterval = DEFAULT_FLOW_SERVICE_WRITE_DELAY_INTERVAL;
