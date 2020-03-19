@@ -29,13 +29,10 @@ import org.apache.nifi.minifi.commons.status.system.SystemDiagnosticsStatus;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 public class FlowStatusReport implements java.io.Serializable {
+    private String timestamp;
     private List<ControllerServiceStatus> controllerServiceStatusList;
     private List<ProcessorStatusBean> processorStatusList;
     private List<ConnectionStatusBean> connectionStatusList;
@@ -47,6 +44,14 @@ public class FlowStatusReport implements java.io.Serializable {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public FlowStatusReport() {
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 
     public List<ControllerServiceStatus> getControllerServiceStatusList() {
@@ -120,6 +125,7 @@ public class FlowStatusReport implements java.io.Serializable {
 
         FlowStatusReport that = (FlowStatusReport) o;
 
+        if (getTimestamp() != null ? !getTimestamp().equals(that.getTimestamp()) : that.getTimestamp() != null) return false;
         if (getControllerServiceStatusList() != null ? !getControllerServiceStatusList().equals(that.getControllerServiceStatusList()) : that.getControllerServiceStatusList() != null) return false;
         if (getProcessorStatusList() != null ? !getProcessorStatusList().equals(that.getProcessorStatusList()) : that.getProcessorStatusList() != null) return false;
         if (getConnectionStatusList() != null ? !getConnectionStatusList().equals(that.getConnectionStatusList()) : that.getConnectionStatusList() != null) return false;
@@ -134,7 +140,8 @@ public class FlowStatusReport implements java.io.Serializable {
 
     @Override
     public int hashCode() {
-        int result = getControllerServiceStatusList() != null ? getControllerServiceStatusList().hashCode() : 0;
+        int result = getTimestamp() != null ? getTimestamp().hashCode() : 0;
+        result = 31 * result + (getControllerServiceStatusList() != null ? getControllerServiceStatusList().hashCode() : 0);
         result = 31 * result + (getProcessorStatusList() != null ? getProcessorStatusList().hashCode() : 0);
         result = 31 * result + (getConnectionStatusList() != null ? getConnectionStatusList().hashCode() : 0);
         result = 31 * result + (getRemoteProcessGroupStatusList() != null ? getRemoteProcessGroupStatusList().hashCode() : 0);
@@ -148,14 +155,10 @@ public class FlowStatusReport implements java.io.Serializable {
     @Override
     public String toString() {
 
-        final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-        final DateFormat df = new SimpleDateFormat(TIMESTAMP_FORMAT);
-        df.setTimeZone(TimeZone.getTimeZone("Z"));
-
         StringWriter jsonString = new StringWriter();
         try(JsonGenerator generator = objectMapper.getFactory().createGenerator(jsonString)){
             generator.writeStartObject();
-            generator.writeObjectField("timestamp", df.format(new Date()));
+            generator.writeObjectField("timestamp", timestamp);
             generator.writeObjectField("controllerServiceStatusList", controllerServiceStatusList);
             generator.writeObjectField("processorStatusList", processorStatusList);
             generator.writeObjectField("connectionStatusList", connectionStatusList);
@@ -170,7 +173,7 @@ public class FlowStatusReport implements java.io.Serializable {
             //this should not occur since we are using a StringWriter, however, in the event it does. Generate
             //the old style report
             return "FlowStatusReport{" +
-                "timestamp" + df.format(new Date()) +
+                "timestamp=" + timestamp +
                 ", controllerServiceStatusList=" + controllerServiceStatusList +
                 ", processorStatusList=" + processorStatusList +
                 ", connectionStatusList=" + connectionStatusList +

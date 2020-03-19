@@ -43,6 +43,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import static org.apache.nifi.minifi.status.StatusRequestParser.parseConnectionStatusRequest;
 import static org.apache.nifi.minifi.status.StatusRequestParser.parseControllerServiceStatusRequest;
@@ -68,6 +72,12 @@ public final class StatusConfigReporter {
             throw new StatusRequestException("Cannot complete status request because the Flow Controller is null");
         }
         FlowStatusReport flowStatusReport = new FlowStatusReport();
+
+        final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        final DateFormat df = new SimpleDateFormat(TIMESTAMP_FORMAT);
+        df.setTimeZone(TimeZone.getTimeZone("Z"));
+        flowStatusReport.setTimestamp(df.format(new Date()));
+
         List<String> errorsGeneratingReport = new LinkedList<>();
         flowStatusReport.setErrorsGeneratingReport(errorsGeneratingReport);
 
